@@ -1,0 +1,77 @@
+@page "{id:int}"
+@model MiniSocialNetwork.Pages.Posts.LikesModel
+@{
+    ViewData["Title"] = "People Who Liked This Post";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <a asp-page="/Posts/Details" asp-route-id="@Model.PostId" class="btn btn-outline-secondary mb-3">
+            <i class="bi bi-arrow-left"></i> Back to Post
+        </a>
+
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0"><i class="bi bi-heart-fill"></i> People Who Liked This Post</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.Users != null && Model.Users.Any())
+                {
+                    <div class="list-group list-group-flush">
+                        @foreach (var user in Model.Users)
+                        {
+                            <div class="list-group-item d-flex align-items-center justify-content-between px-0">
+                                <div class="d-flex align-items-center">
+                                    @if (!string.IsNullOrEmpty(user.AvatarPath))
+                                    {
+                                        <img src="@user.AvatarPath" alt="Avatar" class="avatar me-3">
+                                    }
+                                    else
+                                    {
+                                        <div class="avatar bg-primary text-white d-flex align-items-center justify-content-center me-3">
+                                            <i class="bi bi-person"></i>
+                                        </div>
+                                    }
+                                    <div>
+                                        <a asp-page="/Users/Profile" asp-route-username="@user.Username" 
+                                            class="fw-bold text-decoration-none">@user.Username</a>
+                                        @if (!string.IsNullOrEmpty(user.FullName))
+                                        {
+                                            <br><small class="text-muted">@user.FullName</small>
+                                        }
+                                    </div>
+                                </div>
+                                @if (Model.IsLoggedIn && user.UserId != Model.CurrentUserId)
+                                {
+                                    <form method="post" asp-page-handler="ToggleFollow">
+                                        <input type="hidden" name="targetUserId" value="@user.UserId" />
+                                        <input type="hidden" name="postId" value="@Model.PostId" />
+                                        @if (user.IsFollowedByCurrentUser)
+                                        {
+                                            <button type="submit" class="btn btn-outline-secondary btn-sm">
+                                                <i class="bi bi-person-check"></i> Following
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <button type="submit" class="btn btn-primary btn-sm">
+                                                <i class="bi bi-person-plus"></i> Follow
+                                            </button>
+                                        }
+                                    </form>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center text-muted py-4">
+                        <i class="bi bi-heart" style="font-size: 3rem;"></i>
+                        <p class="mb-0 mt-2">No one has liked this post yet.</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

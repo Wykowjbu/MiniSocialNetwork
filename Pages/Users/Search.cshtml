@@ -1,0 +1,119 @@
+@page
+@model MiniSocialNetwork.Pages.Users.SearchModel
+@{
+    ViewData["Title"] = "Search Users";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h4><i class="bi bi-search"></i> Search Users</h4>
+                <form method="get" class="mt-3">
+                    <div class="input-group">
+                        <input type="text" name="q" class="form-control form-control-lg" 
+                            placeholder="Search by username or name..." value="@Model.Query">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-search"></i> Search
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        @if (!string.IsNullOrEmpty(Model.Query))
+        {
+            <h5 class="mb-3">
+                <i class="bi bi-people"></i> Search Results for "@Model.Query" 
+                <span class="badge bg-secondary">@Model.Results?.Count() found</span>
+            </h5>
+
+            @if (Model.Results != null && Model.Results.Any())
+            {
+                <div class="row">
+                    @foreach (var user in Model.Results)
+                    {
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center">
+                                        @if (!string.IsNullOrEmpty(user.AvatarPath))
+                                        {
+                                            <img src="@user.AvatarPath" alt="Avatar" class="avatar avatar-md me-3">
+                                        }
+                                        else
+                                        {
+                                            <div class="avatar avatar-md bg-primary text-white d-flex align-items-center justify-content-center me-3" style="font-size: 1.5rem;">
+                                                <i class="bi bi-person"></i>
+                                            </div>
+                                        }
+                                        <div class="flex-grow-1">
+                                            <a asp-page="/Users/Profile" asp-route-username="@user.Username" 
+                                                class="fw-bold text-decoration-none fs-5">@user.Username</a>
+                                            @if (!string.IsNullOrEmpty(user.FullName))
+                                            {
+                                                <br><span class="text-muted">@user.FullName</span>
+                                            }
+                                        </div>
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(user.Bio))
+                                    {
+                                        <p class="small text-muted mt-2 mb-2">
+                                            @(user.Bio.Length > 80 ? user.Bio.Substring(0, 80) + "..." : user.Bio)
+                                        </p>
+                                    }
+                                    <div class="d-flex justify-content-between align-items-center mt-3">
+                                        <small class="text-muted">
+                                            <i class="bi bi-file-text"></i> @user.PostCount posts
+                                            <span class="mx-2">·</span>
+                                            <i class="bi bi-people"></i> @user.FollowerCount followers
+                                        </small>
+                                        @if (Model.IsLoggedIn && user.UserId != Model.CurrentUserId)
+                                        {
+                                            <form method="post" asp-page-handler="ToggleFollow">
+                                                <input type="hidden" name="targetUserId" value="@user.UserId" />
+                                                <input type="hidden" name="query" value="@Model.Query" />
+                                                @if (user.IsFollowedByCurrentUser)
+                                                {
+                                                    <button type="submit" class="btn btn-outline-secondary btn-sm">
+                                                        <i class="bi bi-person-check"></i> Following
+                                                    </button>
+                                                }
+                                                else
+                                                {
+                                                    <button type="submit" class="btn btn-primary btn-sm">
+                                                        <i class="bi bi-person-plus"></i> Follow
+                                                    </button>
+                                                }
+                                            </form>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="card">
+                    <div class="card-body text-center py-5">
+                        <i class="bi bi-search" style="font-size: 3rem; opacity: 0.5;"></i>
+                        <h5 class="mt-3">No users found</h5>
+                        <p class="text-muted">Try searching with different keywords.</p>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <i class="bi bi-people" style="font-size: 3rem; opacity: 0.5;"></i>
+                    <h5 class="mt-3">Find People</h5>
+                    <p class="text-muted">Search for users by username or full name.</p>
+                </div>
+            </div>
+        }
+    </div>
+</div>

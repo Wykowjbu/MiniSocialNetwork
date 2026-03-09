@@ -1,0 +1,83 @@
+@page
+@model MiniSocialNetwork.Pages.Account.RegisterModel
+@{
+    ViewData["Title"] = "Register";
+}
+
+<div class="auth-container">
+    <div class="card auth-card">
+        <h2 class="auth-title">
+            <i class="bi bi-person-plus"></i> Create Account
+        </h2>
+
+        @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle me-2"></i>@Model.ErrorMessage
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+
+        <form method="post">
+            <div class="mb-3">
+                <label asp-for="Input.Username" class="form-label">
+                    <i class="bi bi-person"></i> Username <span class="text-danger">*</span>
+                </label>
+                <input asp-for="Input.Username" class="form-control" placeholder="Choose a username" />
+                <span asp-validation-for="Input.Username" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Input.Email" class="form-label">
+                    <i class="bi bi-envelope"></i> Email <span class="text-danger">*</span>
+                </label>
+                <input asp-for="Input.Email" class="form-control" placeholder="Enter your email" />
+                <span asp-validation-for="Input.Email" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Input.FullName" class="form-label">
+                    <i class="bi bi-person-badge"></i> Full Name
+                </label>
+                <input asp-for="Input.FullName" class="form-control" placeholder="Enter your full name (optional)" />
+                <span asp-validation-for="Input.FullName" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Input.Password" class="form-label">
+                    <i class="bi bi-lock"></i> Password <span class="text-danger">*</span>
+                </label>
+                <input asp-for="Input.Password" class="form-control" placeholder="Create a password" />
+                <span asp-validation-for="Input.Password" class="text-danger"></span>
+                <div class="form-text">Password must be at least 6 characters</div>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Input.ConfirmPassword" class="form-label">
+                    <i class="bi bi-lock-fill"></i> Confirm Password <span class="text-danger">*</span>
+                </label>
+                <input asp-for="Input.ConfirmPassword" class="form-control" placeholder="Confirm your password" />
+                <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+            </div>
+
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-success btn-lg">
+                    <i class="bi bi-person-plus"></i> Sign Up
+                </button>
+            </div>
+        </form>
+
+        <hr />
+
+        <div class="text-center">
+            <p class="mb-2">Already have an account?</p>
+            <a asp-page="/Account/Login" class="btn btn-primary">
+                <i class="bi bi-box-arrow-in-right"></i> Login
+            </a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

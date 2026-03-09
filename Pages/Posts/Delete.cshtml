@@ -1,0 +1,68 @@
+@page "{id:int}"
+@model MiniSocialNetwork.Pages.Posts.DeleteModel
+@{
+    ViewData["Title"] = "Delete Post";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0"><i class="bi bi-trash"></i> Delete Post</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <strong>Warning!</strong> Are you sure you want to delete this post? This action cannot be undone.
+                </div>
+
+                @if (Model.Post != null)
+                {
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <div class="post-header">
+                                @if (!string.IsNullOrEmpty(Model.Post.AvatarPath))
+                                {
+                                    <img src="@Model.Post.AvatarPath" alt="Avatar" class="avatar">
+                                }
+                                else
+                                {
+                                    <div class="avatar bg-primary text-white d-flex align-items-center justify-content-center">
+                                        <i class="bi bi-person"></i>
+                                    </div>
+                                }
+                                <div>
+                                    <div class="post-author">@Model.Post.Username</div>
+                                    <div class="post-time">
+                                        <i class="bi bi-clock"></i> @Model.Post.CreatedAt?.ToString("MMM dd, yyyy HH:mm")
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="post-content mt-3">
+                                @Model.Post.Content
+                            </div>
+
+                            @if (!string.IsNullOrEmpty(Model.Post.ImagePath))
+                            {
+                                <img src="@Model.Post.ImagePath" alt="Post Image" class="post-image img-fluid mt-3">
+                            }
+                        </div>
+                    </div>
+
+                    <form method="post">
+                        <input type="hidden" name="id" value="@Model.Post.PostId" />
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-trash"></i> Yes, Delete This Post
+                            </button>
+                            <a asp-page="/Posts/Index" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-lg"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                }
+            </div>
+        </div>
+    </div>
+</div>

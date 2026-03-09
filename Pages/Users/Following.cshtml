@@ -1,0 +1,80 @@
+@page "{username}"
+@model MiniSocialNetwork.Pages.Users.FollowingModel
+@{
+    ViewData["Title"] = Model.Username + " is Following";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <a asp-page="/Users/Profile" asp-route-username="@Model.Username" class="btn btn-outline-secondary mb-3">
+            <i class="bi bi-arrow-left"></i> Back to @Model.Username's Profile
+        </a>
+
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-person-check"></i> @Model.Username is Following (@Model.Following?.Count())</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.Following != null && Model.Following.Any())
+                {
+                    <div class="list-group list-group-flush">
+                        @foreach (var user in Model.Following)
+                        {
+                            <div class="list-group-item d-flex align-items-center justify-content-between px-0">
+                                <div class="d-flex align-items-center">
+                                    @if (!string.IsNullOrEmpty(user.AvatarPath))
+                                    {
+                                        <img src="@user.AvatarPath" alt="Avatar" class="avatar me-3">
+                                    }
+                                    else
+                                    {
+                                        <div class="avatar bg-primary text-white d-flex align-items-center justify-content-center me-3">
+                                            <i class="bi bi-person"></i>
+                                        </div>
+                                    }
+                                    <div>
+                                        <a asp-page="/Users/Profile" asp-route-username="@user.Username" 
+                                            class="fw-bold text-decoration-none">@user.Username</a>
+                                        @if (!string.IsNullOrEmpty(user.FullName))
+                                        {
+                                            <br><small class="text-muted">@user.FullName</small>
+                                        }
+                                        @if (!string.IsNullOrEmpty(user.Bio))
+                                        {
+                                            <br><small class="text-muted">@(user.Bio.Length > 50 ? user.Bio.Substring(0, 50) + "..." : user.Bio)</small>
+                                        }
+                                    </div>
+                                </div>
+                                @if (Model.IsLoggedIn && user.UserId != Model.CurrentUserId)
+                                {
+                                    <form method="post" asp-page-handler="ToggleFollow">
+                                        <input type="hidden" name="targetUserId" value="@user.UserId" />
+                                        @if (user.IsFollowedByCurrentUser)
+                                        {
+                                            <button type="submit" class="btn btn-outline-secondary btn-sm">
+                                                <i class="bi bi-person-check"></i> Following
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <button type="submit" class="btn btn-primary btn-sm">
+                                                <i class="bi bi-person-plus"></i> Follow
+                                            </button>
+                                        }
+                                    </form>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center text-muted py-4">
+                        <i class="bi bi-person-x" style="font-size: 3rem;"></i>
+                        <p class="mb-0 mt-2">@Model.Username isn't following anyone yet.</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

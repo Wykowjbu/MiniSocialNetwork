@@ -1,0 +1,120 @@
+@page
+@model MiniSocialNetwork.Pages.Account.ProfileModel
+@{
+    ViewData["Title"] = "My Profile";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    @if (!string.IsNullOrEmpty(Model.Profile?.AvatarPath))
+                    {
+                        <img src="@Model.Profile.AvatarPath" alt="Avatar" class="avatar avatar-lg rounded-circle mb-3">
+                    }
+                    else
+                    {
+                        <div class="avatar avatar-lg bg-primary text-white d-flex align-items-center justify-content-center mx-auto mb-3" style="font-size: 3rem;">
+                            <i class="bi bi-person"></i>
+                        </div>
+                    }
+                    <h3>@Model.Profile?.Username</h3>
+                    <p class="text-muted">@Model.Profile?.Email</p>
+                </div>
+
+                <div class="profile-stats mb-4">
+                    <div class="profile-stat">
+                        <div class="profile-stat-value">@Model.Profile?.PostCount</div>
+                        <div class="profile-stat-label">Posts</div>
+                    </div>
+                    <div class="profile-stat">
+                        <div class="profile-stat-value">@Model.Profile?.FollowerCount</div>
+                        <div class="profile-stat-label">Followers</div>
+                    </div>
+                    <div class="profile-stat">
+                        <div class="profile-stat-value">@Model.Profile?.FollowingCount</div>
+                        <div class="profile-stat-label">Following</div>
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrEmpty(Model.SuccessMessage))
+                {
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="bi bi-check-circle me-2"></i>@Model.SuccessMessage
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+
+                @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+                {
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="bi bi-exclamation-triangle me-2"></i>@Model.ErrorMessage
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+
+                <hr />
+
+                <h5 class="mb-3"><i class="bi bi-pencil-square"></i> Edit Profile</h5>
+
+                <form method="post" enctype="multipart/form-data">
+                    <input type="hidden" asp-for="Profile.UserId" />
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Profile.Username" class="form-label">Username</label>
+                            <input asp-for="Profile.Username" class="form-control" />
+                            <span asp-validation-for="Profile.Username" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Profile.Email" class="form-label">Email</label>
+                            <input asp-for="Profile.Email" class="form-control" />
+                            <span asp-validation-for="Profile.Email" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Profile.FullName" class="form-label">Full Name</label>
+                            <input asp-for="Profile.FullName" class="form-control" />
+                            <span asp-validation-for="Profile.FullName" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Profile.DateOfBirth" class="form-label">Date of Birth</label>
+                            <input asp-for="Profile.DateOfBirth" class="form-control" type="date" />
+                            <span asp-validation-for="Profile.DateOfBirth" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Profile.Bio" class="form-label">Bio</label>
+                        <textarea asp-for="Profile.Bio" class="form-control" rows="3" placeholder="Tell us about yourself..."></textarea>
+                        <span asp-validation-for="Profile.Bio" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Profile.AvatarFile" class="form-label">Profile Picture</label>
+                        <input asp-for="Profile.AvatarFile" class="form-control" type="file" accept="image/*" />
+                        <div class="form-text">Allowed formats: JPG, JPEG, PNG, GIF</div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save"></i> Save Changes
+                        </button>
+                        <a asp-page="/Account/ChangePassword" class="btn btn-outline-secondary">
+                            <i class="bi bi-key"></i> Change Password
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
