@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using MiniSocialNetwork.BusinessRules;
 using MiniSocialNetwork.Data;
 using MiniSocialNetwork.Repositories;
 using MiniSocialNetwork.Services;
@@ -18,6 +19,10 @@ builder.Services.AddScoped<IPostRepository, PostRepository>();
 builder.Services.AddScoped<ICommentRepository, CommentRepository>();
 builder.Services.AddScoped<IFollowRepository, FollowRepository>();
 builder.Services.AddScoped<ILikeRepository, LikeRepository>();
+
+// Add Business Rules infrastructure
+// Singleton: InMemoryRateLimiter must survive request boundaries to track rolling windows.
+builder.Services.AddSingleton<IRateLimiter, InMemoryRateLimiter>();
 
 // Add Services
 builder.Services.AddScoped<IAuthService, AuthService>();

@@ -1,6 +1,7 @@
 using MiniSocialNetwork.Models;
 using MiniSocialNetwork.ViewModels;
 using MiniSocialNetwork.Repositories;
+using MiniSocialNetwork.BusinessRules;
 
 namespace MiniSocialNetwork.Services
 {
@@ -18,15 +19,35 @@ namespace MiniSocialNetwork.Services
     {
         private readonly IFollowRepository _followRepository;
         private readonly IPostRepository _postRepository;
+        private readonly IUserRepository _userRepository;
 
-        public FollowService(IFollowRepository followRepository, IPostRepository postRepository)
+        public FollowService(
+            IFollowRepository followRepository,
+            IPostRepository postRepository,
+            IUserRepository userRepository)
         {
             _followRepository = followRepository;
             _postRepository = postRepository;
+            _userRepository = userRepository;
         }
 
+        /// <summary>
+        /// Follows a user after applying:
+        /// BR-CON-001, BR-CON-003, BR-CON-004
+        /// </summary>
         public async Task<bool> FollowAsync(int followerId, int followingId)
         {
+            // ── BR-CON-001: Cannot follow yourself ──────────────────────────────
+            FollowValidator.EnsureNotSelfFollow(followerId, followingId);
+
+            // ── BR-CON-003: Target user must exist and be active ─────────────────
+            var targetUser = await _userRepository.GetByIdAsync(followingId);
+            FollowValidator.EnsureTargetUserExists(targetUser is not null && targetUser.IsActive == true);
+
+            // ── BR-CON-004: Following limit ──────────────────────────────────────
+            var currentFollowingCount = await _followRepository.GetFollowingCountAsync(followerId);
+            FollowValidator.EnsureFollowingLimitNotExceeded(currentFollowingCount);
+
             return await _followRepository.FollowAsync(followerId, followingId);
         }
 
@@ -35,24 +56,38 @@ namespace MiniSocialNetwork.Services
             return await _followRepository.UnfollowAsync(followerId, followingId);
         }
 
+        /// <summary>
+        /// Toggles follow status after applying:
+        /// BR-CON-001, BR-CON-002, BR-CON-003, BR-CON-004
+        /// </summary>
         public async Task<bool> ToggleFollowAsync(int followerId, int followingId)
         {
+            // ── BR-CON-001: Cannot follow yourself ──────────────────────────────
+            FollowValidator.EnsureNotSelfFollow(followerId, followingId);
+
+            // ── BR-CON-003: Target user must exist and be active ─────────────────
+            var targetUser = await _userRepository.GetByIdAsync(followingId);
+            FollowValidator.EnsureTargetUserExists(targetUser is not null && targetUser.IsActive == true);
+
             if (await _followRepository.IsFollowingAsync(followerId, followingId))
             {
+                // ── BR-CON-002: Toggle — currently following → unfollow ──────────
                 await _followRepository.UnfollowAsync(followerId, followingId);
-                return false; // Now not following
+                return false;
             }
             else
             {
+                // ── BR-CON-004: Check limit only when trying to add a new follow ──
+                var currentFollowingCount = await _followRepository.GetFollowingCountAsync(followerId);
+                FollowValidator.EnsureFollowingLimitNotExceeded(currentFollowingCount);
+
                 await _followRepository.FollowAsync(followerId, followingId);
-                return true; // Now following
+                return true;
             }
         }
 
         public async Task<bool> IsFollowingAsync(int followerId, int followingId)
-        {
-            return await _followRepository.IsFollowingAsync(followerId, followingId);
-        }
+            => await _followRepository.IsFollowingAsync(followerId, followingId);
 
         public async Task<IEnumerable<FollowViewModel>> GetFollowersAsync(int userId, int? currentUserId = null)
         {
@@ -68,7 +103,7 @@ namespace MiniSocialNetwork.Services
                     FullName = user.FullName,
                     AvatarPath = user.AvatarPath,
                     Bio = user.Bio,
-                    IsFollowedByCurrentUser = currentUserId.HasValue && 
+                    IsFollowedByCurrentUser = currentUserId.HasValue &&
                         await _followRepository.IsFollowingAsync(currentUserId.Value, user.UserId)
                 });
             }
@@ -90,7 +125,7 @@ namespace MiniSocialNetwork.Services
                     FullName = user.FullName,
                     AvatarPath = user.AvatarPath,
                     Bio = user.Bio,
-                    IsFollowedByCurrentUser = currentUserId.HasValue && 
+                    IsFollowedByCurrentUser = currentUserId.HasValue &&
                         await _followRepository.IsFollowingAsync(currentUserId.Value, user.UserId)
                 });
             }

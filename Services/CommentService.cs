@@ -1,6 +1,7 @@
 using MiniSocialNetwork.Models;
 using MiniSocialNetwork.ViewModels;
 using MiniSocialNetwork.Repositories;
+using MiniSocialNetwork.BusinessRules;
 
 namespace MiniSocialNetwork.Services
 {
@@ -14,10 +15,12 @@ namespace MiniSocialNetwork.Services
     public class CommentService : ICommentService
     {
         private readonly ICommentRepository _commentRepository;
+        private readonly IRateLimiter _rateLimiter;
 
-        public CommentService(ICommentRepository commentRepository)
+        public CommentService(ICommentRepository commentRepository, IRateLimiter rateLimiter)
         {
             _commentRepository = commentRepository;
+            _rateLimiter = rateLimiter;
         }
 
         public async Task<IEnumerable<CommentViewModel>> GetCommentsByPostAsync(int postId, int? currentUserId = null)
@@ -36,19 +39,28 @@ namespace MiniSocialNetwork.Services
             });
         }
 
+        /// <summary>
+        /// Creates a comment after applying:
+        /// BR-INT-003 (content validation), BR-INT-005 (rate limit)
+        /// </summary>
         public async Task<CommentViewModel?> CreateCommentAsync(int postId, int userId, string content)
         {
+            // ── BR-INT-005: Rate limit ───────────────────────────────────────────
+            RateLimitPolicies.EnforceCommentRateLimit(_rateLimiter, userId);
+
+            // ── BR-INT-003: Content validation ───────────────────────────────────
+            CommentValidator.ValidateContent(content);
+
             var comment = new Comment
             {
                 PostId = postId,
                 UserId = userId,
-                Content = content,
-                CreatedAt = DateTime.Now
+                Content = content.Trim(),   // BR-SEC-003: trim whitespace
+                CreatedAt = DateTime.UtcNow
             };
 
             var created = await _commentRepository.CreateAsync(comment);
             var fullComment = await _commentRepository.GetByIdAsync(created.CommentId);
-
             if (fullComment == null) return null;
 
             return new CommentViewModel
@@ -64,11 +76,17 @@ namespace MiniSocialNetwork.Services
             };
         }
 
+        /// <summary>
+        /// Deletes a comment after applying:
+        /// BR-INT-004 (ownership check)
+        /// </summary>
         public async Task<bool> DeleteCommentAsync(int commentId, int userId)
         {
             var comment = await _commentRepository.GetByIdAsync(commentId);
-            if (comment == null || comment.UserId != userId)
-                return false;
+            if (comment == null) return false;
+
+            // ── BR-INT-004: Ownership check ──────────────────────────────────────
+            CommentValidator.EnsureOwnership(comment.UserId, userId);
 
             return await _commentRepository.DeleteAsync(commentId);
         }

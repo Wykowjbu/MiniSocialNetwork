@@ -1,0 +1,301 @@
+# Test Scenarios — MiniSocialNetwork
+**Dành cho team Automation (Selenium WebDriver + Java/C#)**  
+Version: 1.0 | Ngày: 2026-03-11
+
+---
+
+## PHẦN 1 — BẢNG WEB ELEMENTS (Element Inventory)
+
+> **Ghi chú locator:** ASP.NET Core Razor Pages dùng `asp-for="Prefix.FieldName"` → render thành `id="Prefix_FieldName"` và `name="Prefix.FieldName"`.
+
+### 1.1 Trang Đăng ký — `/Account/Register`
+
+| Field Name | Type | Required | Best Locator |
+|-----------|------|----------|-------------|
+| Username | `input[text]` | ✅ Yes | `id="Input_Username"` |
+| Email | `input[email]` | ✅ Yes | `id="Input_Email"` |
+| Full Name | `input[text]` | ❌ No | `id="Input_FullName"` |
+| Password | `input[password]` | ✅ Yes | `id="Input_Password"` |
+| Confirm Password | `input[password]` | ✅ Yes | `id="Input_ConfirmPassword"` |
+| Sign Up Button | `button[submit]` | — | `css=button[type='submit'].btn-success` |
+| Login Link | `a` (nav link) | — | `css=a[href*='/Account/Login']` |
+| Error Alert | `div.alert-danger` | — | `css=div.alert.alert-danger` |
+| Field Validation Span | `span.text-danger` | — | `css=span[data-valmsg-for='Input.Username']` |
+
+---
+
+### 1.2 Trang Đăng nhập — `/Account/Login`
+
+| Field Name | Type | Required | Best Locator |
+|-----------|------|----------|-------------|
+| Username / Email | `input[text]` | ✅ Yes | `id="Input_Username"` |
+| Password | `input[password]` | ✅ Yes | `id="Input_Password"` |
+| Remember Me | `input[checkbox]` | ❌ No | `id="Input_RememberMe"` |
+| Login Button | `button[submit]` | — | `css=button[type='submit'].btn-primary` |
+| Register Link | `a` | — | `css=a[href*='/Account/Register']` |
+| Error Alert | `div.alert-danger` | — | `css=div.alert.alert-danger` |
+| Success Alert | `div.alert-success` | — | `css=div.alert.alert-success` |
+
+---
+
+### 1.3 Trang Đổi mật khẩu — `/Account/ChangePassword`
+
+| Field Name | Type | Required | Best Locator |
+|-----------|------|----------|-------------|
+| Current Password | `input[password]` | ✅ Yes | `id="Input_CurrentPassword"` |
+| New Password | `input[password]` | ✅ Yes | `id="Input_NewPassword"` |
+| Confirm New Password | `input[password]` | ✅ Yes | `id="Input_ConfirmPassword"` |
+| Change Password Button | `button[submit]` | — | `css=button[type='submit'].btn-primary` |
+| Back to Profile Link | `a` | — | `css=a[href*='/Account/Profile']` |
+| Success Alert | `div.alert-success` | — | `css=div.alert.alert-success` |
+| Error Alert | `div.alert-danger` | — | `css=div.alert.alert-danger` |
+
+---
+
+### 1.4 Trang Chỉnh sửa Profile — `/Account/Profile`
+
+| Field Name | Type | Required | Best Locator |
+|-----------|------|----------|-------------|
+| Username | `input[text]` | ✅ Yes | `id="Profile_Username"` |
+| Email | `input[email]` | ✅ Yes | `id="Profile_Email"` |
+| Full Name | `input[text]` | ❌ No | `id="Profile_FullName"` |
+| Date of Birth | `input[date]` | ❌ No | `id="Profile_DateOfBirth"` |
+| Bio | `textarea` | ❌ No | `id="Profile_Bio"` |
+| Profile Picture | `input[file]` | ❌ No | `id="Profile_AvatarFile"` |
+| Save Changes Button | `button[submit]` | — | `css=button[type='submit'].btn-primary` |
+| Change Password Link | `a` | — | `css=a[href*='/Account/ChangePassword']` |
+| Success Alert | `div.alert-success` | — | `css=div.alert.alert-success` |
+| Error Alert | `div.alert-danger` | — | `css=div.alert.alert-danger` |
+
+---
+
+### 1.5 Trang Tạo bài viết — `/Posts/Create`
+
+| Field Name | Type | Required | Best Locator |
+|-----------|------|----------|-------------|
+| Content | `textarea` | ✅ Yes | `id="Input_Content"` |
+| Image File | `input[file]` | ❌ No | `id="Input_ImageFile"` |
+| Post Button | `button[submit]` | — | `css=button[type='submit'].btn-primary` |
+| Cancel Link | `a` | — | `css=a[href*='/Posts/Index']` |
+| Error Alert | `div.alert-danger` | — | `css=div.alert.alert-danger` |
+| Content Validation | `span.text-danger` | — | `css=span[data-valmsg-for='Input.Content']` |
+
+---
+
+### 1.6 Trang Chỉnh sửa bài viết — `/Posts/Edit/{id}`
+
+| Field Name | Type | Required | Best Locator |
+|-----------|------|----------|-------------|
+| Post ID (hidden) | `input[hidden]` | — | `name="Input.PostId"` |
+| Content | `textarea` | ✅ Yes | `id="Input_Content"` |
+| Image File | `input[file]` | ❌ No | `id="Input_ImageFile"` |
+| Save Changes Button | `button[submit]` | — | `css=button[type='submit'].btn-warning` |
+| Cancel Link | `a` | — | `css=a[href*='/Posts/Index']` |
+| Error Alert | `div.alert-danger` | — | `css=div.alert.alert-danger` |
+
+---
+
+### 1.7 Trang Xóa bài viết — `/Posts/Delete/{id}`
+
+| Field Name | Type | Required | Best Locator |
+|-----------|------|----------|-------------|
+| Post ID (hidden) | `input[hidden]` | — | `name="id"` |
+| Delete Button | `button[submit]` | — | `css=button[type='submit'].btn-danger` |
+| Cancel Link | `a` | — | `css=a[href*='/Posts/Index']` |
+| Warning Alert | `div.alert-warning` | — | `css=div.alert.alert-warning` |
+
+---
+
+### 1.8 Trang Chi tiết bài viết — `/Posts/Details/{id}`
+
+| Field Name | Type | Required | Best Locator |
+|-----------|------|----------|-------------|
+| Like Button | `button[submit]` (trong form) | — | `css=form[action*='Like'] button[type='submit']` |
+| Post ID (Like hidden) | `input[hidden]` | — | `name="postId"` (trong form Like) |
+| Comment Textarea | `textarea` | ✅ Yes | `name="commentContent"` |
+| Post Comment Button | `button[submit]` | — | `css=form[action*='AddComment'] button[type='submit']` |
+| Delete Comment Button | `button[submit]` | — | `css=form[action*='DeleteComment'] button.text-danger` |
+| Edit Post Link | `a` | — | `css=a[href*='/Posts/Edit']` |
+| Delete Post Link | `a` | — | `css=a[href*='/Posts/Delete']` |
+| Back to Feed Link | `a` | — | `css=a[href='/']` |
+
+---
+
+### 1.9 Trang Tìm kiếm người dùng — `/Users/Search`
+
+| Field Name | Type | Required | Best Locator |
+|-----------|------|----------|-------------|
+| Search Input | `input[text]` | ❌ No | `name="q"` |
+| Search Button | `button[submit]` | — | `css=button[type='submit'].btn-primary` |
+| Follow/Unfollow Button | `button[submit]` (trong form) | — | `css=form[action*='ToggleFollow'] button[type='submit']` |
+| Search Results Badge | `span.badge` | — | `css=span.badge.bg-secondary` |
+
+---
+
+## PHẦN 2 — KẾT QUẢ MONG ĐỢI (Expected Results)
+
+### 2.1 Đăng ký (Register)
+
+| Scenario | Input | Expected Result |
+|----------|-------|----------------|
+| ✅ **Thành công** | Username hợp lệ, email mới, password ≥8 ký tự + chữ hoa + số, confirm khớp | Redirect sang `/Account/Login?message=...` · Hiển thị `div.alert-success` với text **"Registration successful! Please login."** |
+| ❌ Bỏ trống Username | Không nhập | Client-side: `span[data-valmsg-for='Input.Username']` hiển thị **"Username is required"** · Nút Submit vẫn kích hoạt nhưng form không post |
+| ❌ Username sai format | `user name!` (có space/ký tự đặc biệt) | `span[data-valmsg-for='Input.Username']` → **"Username can only contain letters, numbers, and underscores"** |
+| ❌ Username quá ngắn | `ab` (2 ký tự) | **"Username must be between 3 and 50 characters"** |
+| ❌ Email sai định dạng | `notanemail` | `span[data-valmsg-for='Input.Email']` → **"Invalid email format"** |
+| ❌ Email đã tồn tại | Email đã đăng ký | Server-side: `div.alert-danger` → **"Email already registered."** |
+| ❌ Username đã tồn tại | Username đã đăng ký | Server-side: `div.alert-danger` → **"Username already exists."** |
+| ❌ Password yếu | `password` (không có chữ hoa, số) | Server validation: **"Password must be 8–128 characters long."** / **"Password must include at least one uppercase letter..."** |
+| ❌ Password < 6 ký tự (UI hint) | `abc12` | `span[data-valmsg-for='Input.Password']` → **"Password must be at least 6 characters"** |
+| ❌ Confirm không khớp | Password ≠ ConfirmPassword | `span[data-valmsg-for='Input.ConfirmPassword']` → **"Passwords do not match"** |
+| ❌ Full Name > 100 ký tự | Chuỗi 101 ký tự | `span[data-valmsg-for='Input.FullName']` → **"Full name cannot exceed 100 characters"** |
+
+---
+
+### 2.2 Đăng nhập (Login)
+
+| Scenario | Input | Expected Result |
+|----------|-------|----------------|
+| ✅ **Thành công** | Username/email đúng + password đúng | Redirect sang `/` (Home Feed) · Session được set (`UserId`, [Username](file:///d:/Users/huynpde180519/fpt/swt/MiniSocialNetwork/BusinessRules/UserValidator.cs#24-39)) |
+| ❌ Bỏ trống Username | Không nhập | Client-side: **"Username is required"** |
+| ❌ Sai username/password | Thông tin không khớp | Server-side: `div.alert-danger` → **"Invalid username or password."** |
+| ❌ Tài khoản bị khóa | `IsActive = false` | Server-side: `div.alert-danger` → **"Your account has been deactivated. Please contact support."** |
+| ✅ Remember Me | Tích checkbox | Checkbox được tích, form post bình thường |
+| ℹ️ Đã đăng nhập | Truy cập `/Account/Login` | Tự động redirect sang `/` |
+
+---
+
+### 2.3 Đổi mật khẩu (Change Password)
+
+| Scenario | Input | Expected Result |
+|----------|-------|----------------|
+| ✅ **Thành công** | CurrentPassword đúng, NewPassword ≥8 + chữ hoa + số, Confirm khớp | Trang reload · `div.alert-success` → **"Password changed successfully."** (hoặc tương đương) |
+| ❌ Bỏ trống bất kỳ trường | Để trống | Client-side validation · Span hiển thị lỗi tương ứng |
+| ❌ Current password sai | Nhập sai | Server-side: `div.alert-danger` → **"Current password is incorrect."** |
+| ❌ Confirm không khớp | NewPassword ≠ ConfirmPassword | Client-side: **"Passwords do not match"** |
+| ❌ New password yếu | Không đủ độ phức tạp | Server: **"Password must include at least one uppercase letter..."** |
+| ❌ Chưa đăng nhập | Truy cập trực tiếp | Redirect sang `/Account/Login` |
+
+---
+
+### 2.4 Tạo bài viết (Create Post)
+
+| Scenario | Input | Expected Result |
+|----------|-------|----------------|
+| ✅ **Thành công (text only)** | Content ≥ 1 ký tự, không ảnh | Redirect sang `/Posts/Index?message=Post created successfully!` · `div.alert-success` xuất hiện |
+| ✅ **Thành công (có ảnh)** | Content + ảnh jpg/png/gif ≤ 10MB | Redirect sang `/Posts/Index` · Ảnh hiển thị trong post |
+| ❌ Bỏ trống Content | Để trống | Client-side: `span[data-valmsg-for='Input.Content']` → **"Content is required."** |
+| ❌ Content > 5000 ký tự | Chuỗi 5001 ký tự | Server: `div.alert-danger` hoặc validation error |
+| ❌ Ảnh sai định dạng | Upload file `.pdf` hoặc `.exe` | Server: Error — **"Only image files (jpg, jpeg, png, gif) are allowed."** |
+| ❌ Ảnh quá lớn | File > 10MB | Server: Error — **"Image file size cannot exceed 10MB."** |
+| ❌ Chưa đăng nhập | Truy cập trực tiếp | Redirect sang `/Account/Login` |
+
+---
+
+### 2.5 Chỉnh sửa bài viết (Edit Post)
+
+| Scenario | Input | Expected Result |
+|----------|-------|----------------|
+| ✅ **Thành công** | Chỉnh nội dung, nhấn Save | Redirect sang `/Posts/Index` · Post được cập nhật, hiển thị **"(edited)"** khi xem Details |
+| ❌ Bỏ trống Content | Xóa hết nội dung | Client validation hoặc Server → **"Post content is required."** |
+| ❌ Không phải chủ sở hữu | URL `/Posts/Edit/{id}` của người khác | Redirect về `/Posts/Index` hoặc `div.alert-danger` → **"You are not authorized..."** |
+| ❌ Chưa đăng nhập | Truy cập trực tiếp | Redirect sang `/Account/Login` |
+
+---
+
+### 2.6 Xóa bài viết (Delete Post)
+
+| Scenario | Input | Expected Result |
+|----------|-------|----------------|
+| ✅ **Thành công** | Nhấn "Yes, Delete This Post" | Redirect sang `/Posts/Index` · Post biến mất khỏi feed |
+| ✅ **Hủy** | Nhấn Cancel | Redirect sang `/Posts/Index` · Post vẫn tồn tại |
+| ❌ Không phải chủ sở hữu | Truy cập URL `/Posts/Delete/{id}` khác | Redirect về Index hoặc lỗi 403 |
+
+---
+
+### 2.7 Like bài viết
+
+| Scenario | Điều kiện | Expected Result |
+|----------|-----------|----------------|
+| ✅ **Like thành công** | Đăng nhập, Like bài người khác | Trang reload · Like count tăng 1 · Icon tim đổi thành `bi-heart-fill` (class `liked`) |
+| ✅ **Unlike (toggle)** | Like rồi Like lần 2 | Like count giảm 1 · Icon trở về `bi-heart` |
+| ❌ **Like bài của chính mình** | Post owner tự like | Server: Error — **"You cannot like your own post."** (hoặc nút Like không hiển thị với owner) |
+| ❌ Chưa đăng nhập | Xem Details | Nút Like không hiển thị, thay bằng text số lượt Like |
+
+---
+
+### 2.8 Bình luận (Comment)
+
+| Scenario | Input | Expected Result |
+|----------|-------|----------------|
+| ✅ **Thành công** | Nhập nội dung, nhấn "Post Comment" | Trang reload · Comment mới xuất hiện cuối danh sách · Comment count tăng |
+| ❌ Bỏ trống | Để trống textarea (có `required` attr) | Trình duyệt block submit (HTML5 native required) |
+| ❌ Comment > 1000 ký tự | Nhập 1001 ký tự | Server: `div.alert-danger` → **"Comment cannot exceed 1000 characters."** |
+| ✅ Xóa comment của mình | Nhấn "Delete" → confirm OK | Comment biến mất · Comment count giảm |
+| ❌ Cancel xóa | Nhấn "Delete" → Hủy dialog | Comment vẫn còn |
+| ❌ Chưa đăng nhập | Xem Details | Form comment không hiển thị · Hiển thị `div.alert-info` → **"Login to post a comment."** |
+
+---
+
+### 2.9 Follow / Unfollow
+
+| Scenario | Điều kiện | Expected Result |
+|----------|-----------|----------------|
+| ✅ **Follow thành công** | Đăng nhập, nhấn Follow | Trang reload · Nút đổi thành "Following" (class `btn-outline-secondary`) |
+| ✅ **Unfollow (toggle)** | Đang Following, nhấn lại | Trang reload · Nút trở về "Follow" (class `btn-primary`) |
+| ❌ Follow chính mình | User card của chính user | Nút Follow **không hiển thị** với tài khoản của chính mình |
+| ❌ Chưa đăng nhập | Xem Search | Nút Follow **không hiển thị** |
+
+---
+
+### 2.10 Tìm kiếm người dùng (Search)
+
+| Scenario | Input | Expected Result |
+|----------|-------|----------------|
+| ✅ **Tìm thấy** | Username hoặc FullName hợp lệ | Danh sách user cards · Badge hiển thị `"X found"` |
+| ✅ **Không tìm thấy** | Chuỗi không khớp | `div.card` với text **"No users found"** / **"Try searching with different keywords."** |
+| ℹ️ Tìm kiếm rỗng (GET) | URL `/Users/Search` không có `?q=` | Hiển thị **"Find People"** / **"Search for users by username or full name."** |
+
+---
+
+## PHẦN 3 — TỔNG HỢP TEST CASE CHO SELENIUM
+
+### Quick Reference — URL Mapping
+
+| Trang | URL | Cần đăng nhập? |
+|-------|-----|:---:|
+| Home Feed | `/` | ❌ |
+| Register | `/Account/Register` | ❌ |
+| Login | `/Account/Login` | ❌ |
+| My Profile | `/Account/Profile` | ✅ |
+| Change Password | `/Account/ChangePassword` | ✅ |
+| Post List | `/Posts/Index` | ❌ |
+| Post Details | `/Posts/Details/{id}` | ❌ (Like/Comment → ✅) |
+| Create Post | `/Posts/Create` | ✅ |
+| Edit Post | `/Posts/Edit/{id}` | ✅ |
+| Delete Post | `/Posts/Delete/{id}` | ✅ |
+| Search Users | `/Users/Search?q={keyword}` | ❌ |
+| User Profile | `/Users/Profile?username={u}` | ❌ |
+
+---
+
+### Selector cheat sheet — Error/Success Messages
+
+| Loại | CSS Selector | Ghi chú |
+|------|-------------|---------|
+| Server Error (đỏ) | `div.alert.alert-danger` | `.getText()` để lấy nội dung |
+| Server Success (xanh) | `div.alert.alert-success` | Chờ hiển thị sau redirect |
+| Client Error (field) | `span[data-valmsg-for='Input.FieldName']` | Thay `FieldName` bằng tên field |
+| Field invalid class | `input.is-invalid` | jQuery Validate thêm class này |
+| Loading/wait | `button[type='submit'][disabled]` | Sau click, một số form disable nút |
+
+---
+
+### Ưu tiên test coverage
+
+| Độ ưu tiên | Module |
+|-----------|--------|
+| 🔴 P1 (Phải có) | Register · Login · Create Post · Like (toggle) · Comment |
+| 🟠 P2 (Quan trọng) | Edit Post · Delete Post · Follow/Unfollow · ChangePassword |
+| 🟡 P3 (Nên có) | Search User · Edit Profile · Upload Avatar/Image |
+| 🟢 P4 (Bổ sung) | Rate limit edge cases · Session expiry redirect |

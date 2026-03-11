@@ -1,6 +1,7 @@
 using MiniSocialNetwork.Models;
 using MiniSocialNetwork.ViewModels;
 using MiniSocialNetwork.Repositories;
+using MiniSocialNetwork.BusinessRules;
 
 namespace MiniSocialNetwork.Services
 {
@@ -22,19 +23,22 @@ namespace MiniSocialNetwork.Services
     {
         private readonly IPostRepository _postRepository;
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly IRateLimiter _rateLimiter;
 
-        public PostService(IPostRepository postRepository, IWebHostEnvironment webHostEnvironment)
+        public PostService(
+            IPostRepository postRepository,
+            IWebHostEnvironment webHostEnvironment,
+            IRateLimiter rateLimiter)
         {
             _postRepository = postRepository;
             _webHostEnvironment = webHostEnvironment;
+            _rateLimiter = rateLimiter;
         }
 
         public async Task<PostViewModel?> GetPostAsync(int postId, int? currentUserId = null)
         {
             var post = await _postRepository.GetByIdWithUserAsync(postId);
-            if (post == null)
-                return null;
-
+            if (post == null) return null;
             return await MapToViewModelAsync(post, currentUserId);
         }
 
@@ -42,12 +46,8 @@ namespace MiniSocialNetwork.Services
         {
             var posts = await _postRepository.GetAllAsync();
             var viewModels = new List<PostViewModel>();
-
             foreach (var post in posts)
-            {
                 viewModels.Add(await MapToViewModelAsync(post, currentUserId));
-            }
-
             return viewModels;
         }
 
@@ -55,12 +55,8 @@ namespace MiniSocialNetwork.Services
         {
             var posts = await _postRepository.GetByUserIdAsync(userId);
             var viewModels = new List<PostViewModel>();
-
             foreach (var post in posts)
-            {
                 viewModels.Add(await MapToViewModelAsync(post, currentUserId));
-            }
-
             return viewModels;
         }
 
@@ -68,12 +64,8 @@ namespace MiniSocialNetwork.Services
         {
             var posts = await _postRepository.GetHomeFeedAsync(pageNumber, pageSize);
             var viewModels = new List<PostViewModel>();
-
             foreach (var post in posts)
-            {
                 viewModels.Add(await MapToViewModelAsync(post, currentUserId));
-            }
-
             return viewModels;
         }
 
@@ -81,97 +73,118 @@ namespace MiniSocialNetwork.Services
         {
             var posts = await _postRepository.GetFollowingFeedAsync(userId, pageNumber, pageSize);
             var viewModels = new List<PostViewModel>();
-
             foreach (var post in posts)
-            {
                 viewModels.Add(await MapToViewModelAsync(post, userId));
-            }
-
             return viewModels;
         }
 
+        /// <summary>
+        /// Creates a post after applying:
+        /// BR-PST-001 (content validation), BR-PST-005 (rate limit)
+        /// </summary>
         public async Task<Post> CreatePostAsync(PostViewModel model, int userId)
         {
+            // ── BR-PST-005: Rate limit ───────────────────────────────────────────
+            RateLimitPolicies.EnforcePostRateLimit(_rateLimiter, userId);
+
+            // ── BR-PST-001: Content validation ──────────────────────────────────
+            PostValidator.ValidateContent(model.Content);
+
             var post = new Post
             {
                 UserId = userId,
-                Content = model.Content,
+                Content = model.Content.Trim(),   // BR-SEC-003: trim whitespace
                 ImagePath = model.ImagePath,
-                CreatedAt = DateTime.Now
+                CreatedAt = DateTime.UtcNow
             };
 
             return await _postRepository.CreateAsync(post);
         }
 
+        /// <summary>
+        /// Updates a post after applying:
+        /// BR-PST-001 (content), BR-PST-003 (ownership), BR-PST-004 (UpdatedAt)
+        /// </summary>
         public async Task<bool> UpdatePostAsync(PostViewModel model, int userId)
         {
             var post = await _postRepository.GetByIdAsync(model.PostId);
-            if (post == null || post.UserId != userId)
-                return false;
+            if (post == null) return false;
 
-            post.Content = model.Content;
+            // ── BR-PST-003: Ownership check ──────────────────────────────────────
+            PostValidator.EnsureOwnership(post.UserId, userId);
+
+            // ── BR-PST-001: Content validation ──────────────────────────────────
+            PostValidator.ValidateContent(model.Content);
+
+            post.Content = model.Content.Trim();    // BR-SEC-003: trim
             if (!string.IsNullOrEmpty(model.ImagePath))
-            {
                 post.ImagePath = model.ImagePath;
-            }
-            post.UpdatedAt = DateTime.Now;
+
+            // ── BR-PST-004: Record edit timestamp ───────────────────────────────
+            post.UpdatedAt = DateTime.UtcNow;
 
             await _postRepository.UpdateAsync(post);
             return true;
         }
 
+        /// <summary>
+        /// Deletes a post after applying:
+        /// BR-PST-003 (ownership)
+        /// </summary>
         public async Task<bool> DeletePostAsync(int postId, int userId)
         {
             var post = await _postRepository.GetByIdAsync(postId);
-            if (post == null || post.UserId != userId)
-                return false;
+            if (post == null) return false;
 
-            // Delete post image if exists
+            // ── BR-PST-003: Ownership check ──────────────────────────────────────
+            PostValidator.EnsureOwnership(post.UserId, userId);
+
             if (!string.IsNullOrEmpty(post.ImagePath))
             {
                 var imagePath = Path.Combine(_webHostEnvironment.WebRootPath, post.ImagePath.TrimStart('/'));
-                if (File.Exists(imagePath))
-                {
-                    File.Delete(imagePath);
-                }
+                if (File.Exists(imagePath)) File.Delete(imagePath);
             }
 
             return await _postRepository.DeleteAsync(postId);
         }
 
+        /// <summary>
+        /// Uploads a post image after applying:
+        /// BR-PST-002, BR-SEC-006 (file type and size validation)
+        /// </summary>
         public async Task<string?> UploadPostImageAsync(IFormFile file, int userId)
         {
-            if (file == null || file.Length == 0)
-                return null;
+            if (file == null || file.Length == 0) return null;
 
-            // Validate file type
-            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
-            var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
-            if (!allowedExtensions.Contains(extension))
-                return null;
+            // ── BR-PST-002 / BR-SEC-006: Validate file ──────────────────────────
+            PostValidator.ValidateImage(file);
 
-            // Create uploads directory if it doesn't exist
             var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads", "posts");
-            if (!Directory.Exists(uploadsFolder))
-            {
-                Directory.CreateDirectory(uploadsFolder);
-            }
+            Directory.CreateDirectory(uploadsFolder);
 
-            // Generate unique filename
-            var fileName = $"{userId}_{DateTime.Now:yyyyMMddHHmmss}_{Guid.NewGuid():N}{extension}";
+            // ── BR-SEC-006: Use GUID filename to prevent path traversal ──────────
+            var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+            var fileName = $"{userId}_{DateTime.UtcNow:yyyyMMddHHmmss}_{Guid.NewGuid():N}{extension}";
             var filePath = Path.Combine(uploadsFolder, fileName);
 
-            // Save file
             using (var stream = new FileStream(filePath, FileMode.Create))
-            {
                 await file.CopyToAsync(stream);
-            }
 
             return $"/uploads/posts/{fileName}";
         }
 
+        /// <summary>
+        /// Toggles a like after applying:
+        /// BR-INT-001 (no self-like), BR-INT-002 (toggle behavior)
+        /// </summary>
         public async Task<bool> ToggleLikeAsync(int postId, int userId)
         {
+            // ── BR-INT-001: Cannot like own post ─────────────────────────────────
+            var post = await _postRepository.GetByIdAsync(postId);
+            if (post != null)
+                LikeValidator.EnsureNotSelfLike(post.UserId, userId);
+
+            // ── BR-INT-002: Toggle like (handled in repository) ──────────────────
             return await _postRepository.ToggleLikeAsync(postId, userId);
         }
 
